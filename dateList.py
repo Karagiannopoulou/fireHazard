@@ -13,7 +13,7 @@ import pandas as pd
 # Check licenses 
 arcpy.CheckOutExtension("Spatial")
 arcpy.CheckOutExtension("3D")
-arcpy.env.overwriteOutput = True
+#arcpy.env.overwriteOutput = True
 
 #Start time
 start_time = time.time()
@@ -54,10 +54,15 @@ def raster_info(input2,wildcard):
     
         for foldername in folderNames:
             
+            
             inner_folderPath = os.listdir(os.path.join(folderPath,foldername))
             
+#             print ("inner {}".format(inner_folderPath))
+            
+ 
             
             for filename in inner_folderPath:
+                
                 
                 if filename.endswith(wildcard):
                 
@@ -134,22 +139,64 @@ def compare2lists(vectorDates, rasterInfo):
 #     print dates_dictionary
     return dates_dictionary 
 
-def rastersMunipulation(dates_dictionary):
+def rastersProjection(dates_dictionary, directory):
     
-    for keys,values in dates_dictionary.items():
+    #walk = arcpy.da.Walk(directory, topdown = True)
+    
+    for keys, values in dates_dictionary.items():
         
-        for modis_name in values[1]:
-        
-        
-            print modis_name
-        
+        arrays_withnames = [arrays for  arrays  in values[1]]
+         
+         
+        for hdf_file in arrays_withnames:
+            
+           
+            for folderPath, folderNames, fileNames in os.walk(directory):
+                
+                for modis_images in fileNames:                       
+                
+                    if modis_images == hdf_file:
+                        
+#                         print ("hdf_file  {}".format(hdf_file))
+#                         print ("modis_images  {}".format(modis_images))
 
+                        workspace = env.workspace = folderPath
+                        
+                        raster_modis_images = arcpy.Raster(modis_images)
+                        
+                        print ("raster_modis_images {}".format(raster_modis_images))
+                        
+                        
+                        # extract from hdf multiband layer the first band which is the NDVI and convert it to geotiff
+                                                
+                        try: 
+                            ndvi_name = modis_images.split(".hdf")[0] + "_ndvi.tif"
+                            ndvi_path = os.path.join(workspace, ndvi_name)
+                            ndvi_image = arcpy.ExtractSubDataset_management(raster_modis_images,ndvi_path, "0")
+                            
+                            print ("ndvi_image  {}".format(ndvi_image))
+                            
+                            
+                            # project ndvi images
+                            
+                            prj_name = modis_images.split(".hdf")[0] + "_prj.tif"
+                            prj_path = os.path.join(workspace, prj_name)
+                            prj_ndvi = arcpy.ProjectRaster_management(ndvi_image, prj_path, "GEOGCS['GCS_WGS_1984',DATUM['D_WGS_1984',SPHEROID['WGS_1984',6378137.0,298.257223563]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]]", "NEAREST", "5.59954171587093E-03 5.59954171587093E-03", "", "", "PROJCS['Unknown_datum_based_upon_the_custom_spheroid_Sinusoidal',GEOGCS['GCS_Unknown_datum_based_upon_the_custom_spheroid',DATUM['D_Not_specified_based_on_custom_spheroid',SPHEROID['Custom_spheroid',6371007.181,0.0]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Sinusoidal'],PARAMETER['false_easting',0.0],PARAMETER['false_northing',0.0],PARAMETER['central_meridian',0.0],UNIT['Meter',1.0]]", "NO_VERTICAL")
+    
+                            
+                            print ("prj_ndvi  {}".format(prj_ndvi))
+                            
+                        except arcpy.ExecuteError:
+                            #print(arcpy.GetMessages())
+                            
+                            continue
+                            
 
 def main():
     dates_from_vector = fireDates(firePoints, "firedate_g")
     rasterInfo = raster_info(maindir, '.hdf')
     dates_dictionary = compare2lists(dates_from_vector,rasterInfo)
-    HDF_rasters = rastersMunipulation(dates_dictionary)
+    HDF_rasters = rastersProjection(dates_dictionary, maindir)
     
 
     #print ("values {}".format(dates_dictionary.values()))
