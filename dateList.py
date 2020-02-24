@@ -169,6 +169,3 @@ def rastersPreprocessing(dates_dictionary, directory):
                             continue
 
     return "job done"
-
-
-       
