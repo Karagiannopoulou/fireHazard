@@ -11,10 +11,6 @@ from datesDictionary import fireDates
 from datesDictionary import raster_info
 from datesDictionary import compare2lists
 
-# Check licenses
-arcpy.CheckOutExtension("Spatial")
-arcpy.CheckOutExtension("3D")
-arcpy.env.overwriteOutput = True
 
 # Start time
 start_time = time.time()
@@ -25,12 +21,7 @@ firePoints = r'D:\FireHazard\firepoints\centr_msg_date_wgs.shp'
 fc_schema = r'C:\Users\noa\eclipse-workspace\ZonalStatistics\output\fc_schema.shp' # standardized shapefile's schema (attribute table),which will denote empty's shapefile schema. 
 output_folder = r'C:\Users\noa\eclipse-workspace\ZonalStatistics\output' # setup where you want to save the output shapefile with the ndvi values. 
 
-
-# call build-in functions
-
-
-# create an empty shape file to be filled with the ndvi values
-def emptyFC(firePoints, default_schema):
+def emptyFC(firePoints, default_schema, output_folder):
     try:
         outputname = 'fc_ndvi.shp'
         spatial_ref = arcpy.Describe(firePoints).spatialReference
@@ -42,11 +33,9 @@ def emptyFC(firePoints, default_schema):
     
     return emptyFC
 
+def zonalndvi(firePoints, maindir, dictionary, emptyFC, output_folder):  
 
-def zonalndvi(emptyFC, dictionary):  
-
-    for keys, values in dictionary.items():
-        
+    for keys, values in dictionary.items(): 
     
         img01 = str(values[1][0].split(".hdf")[0]) + "_prj.tif"
         img02 = str(values[1][1].split(".hdf")[0]) + "_prj.tif"
@@ -134,17 +123,14 @@ def zonalndvi(emptyFC, dictionary):
                 
     return  emptyFC   
         
-
- 
 def main():
     dates_from_vector = fireDates(firePoints, "firedate_g")
     rasterInfo = raster_info(maindir, '.hdf')
     dates_dictionary = compare2lists(dates_from_vector, rasterInfo)
-    emptyFC = emptyFC(firePoints, fc_schema)
-    FC_withNDVI = zonalndvi(emptyFC, dates_dictionary)
+    empty_shapefile = emptyFC(firePoints, fc_schema, output_folder)
+    FC_withNDVI = zonalndvi(firePoints, maindir, dates_dictionary, empty_shapefile, output_folder)
     
 
- 
 if __name__ == "__main__":
     main()
 
