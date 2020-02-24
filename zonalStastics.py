@@ -16,8 +16,8 @@ from datesDictionary import compare2lists
 start_time = time.time()
 
 # Set up global variables
-maindir = r'Y:\data\KaterinaKarag\2018'
-firePoints = r'D:\FireHazard\firepoints\centr_msg_date_wgs.shp'
+maindir = r'Y:\data\KaterinaKarag\2018' # directory with the modis images. 
+firePoints = r'D:\FireHazard\firepoints\centr_msg_date_wgs.shp' # points with the firedates
 fc_schema = r'C:\Users\noa\eclipse-workspace\ZonalStatistics\output\fc_schema.shp' # standardized shapefile's schema (attribute table),which will denote empty's shapefile schema. 
 output_folder = r'C:\Users\noa\eclipse-workspace\ZonalStatistics\output' # setup where you want to save the output shapefile with the ndvi values. 
 
@@ -69,7 +69,7 @@ def zonalndvi(firePoints, maindir, dictionary, emptyFC, output_folder):
                         
      
                         extracted_vector1 = os.path.join(output_folder, outputName1) 
-                        arcpy.gp.ExtractValuesToPoints_sa("firePoints_lyr", raster_images, extracted_vector1, "NONE", "VALUE_ONLY")
+                        arcpy.gp.ExtractValuesToPoints_sa("firePoints_lyr", raster_images, extracted_vector1, "INTERPOLATE", "VALUE_ONLY")
                         
                         print("extracted vector1 {}".format(extracted_vector1))
     
@@ -89,7 +89,7 @@ def zonalndvi(firePoints, maindir, dictionary, emptyFC, output_folder):
                         
                         extracted_vector2 = os.path.join(output_folder, outputName2)
                         
-                        arcpy.gp.ExtractValuesToPoints_sa("firePoints_lyr", raster_images, extracted_vector2, "NONE", "VALUE_ONLY")
+                        arcpy.gp.ExtractValuesToPoints_sa("firePoints_lyr", raster_images, extracted_vector2, "INTERPOLATE", "VALUE_ONLY")
                         
                         print("extracted vector2 {}".format(extracted_vector2))
     
@@ -106,7 +106,7 @@ def zonalndvi(firePoints, maindir, dictionary, emptyFC, output_folder):
                         outputName3 = "fc_" + keys + name3 + '.shp'
                         extracted_vector3 = os.path.join(output_folder, outputName3)
                         
-                        arcpy.gp.ExtractValuesToPoints_sa("firePoints_lyr", raster_images, extracted_vector3, "NONE", "VALUE_ONLY")
+                        arcpy.gp.ExtractValuesToPoints_sa("firePoints_lyr", raster_images, extracted_vector3, "INTERPOLATE", "VALUE_ONLY")
                         
                         print("extracted vector3 {}".format(extracted_vector3))
                         
